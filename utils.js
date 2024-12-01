@@ -3,6 +3,8 @@ const cloudinary = require("./config/cloudinary");
 const fs = require("fs");
 const path = require("path");
 const { sendCertificateEmail } = require("./mailers/mail");
+// const filestack = require("filestack-node");
+// const client = filestack.init("your-api-key"); // Replace with your Filestack API key
 
 
 
@@ -231,9 +233,26 @@ const uploadCertificateToCloudinary = (filePath) => {
   });
 };
 
+
+// Function to upload the certificate file to Filestack
+const uploadCertificateToFilestack = (filePath) => {
+  return new Promise((resolve, reject) => {
+    client.upload(filePath)
+      .then((result) => {
+        console.log("File uploaded successfully:", result);
+        resolve(result.url); // Return the URL of the uploaded file
+      })
+      .catch((error) => {
+        console.error("Error uploading file to Filestack:", error);
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   generateAndUploadCertificate,
   convertExcelToBase64,
   generateCertificates,
   uploadCertificateToCloudinary,
+  uploadCertificateToFilestack
 };
