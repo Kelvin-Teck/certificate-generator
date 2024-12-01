@@ -1,7 +1,7 @@
 const transporter = require("../config/transporter");
 
 const sendCertificateEmail = async (user, filePath) => {
-  const { name, email } = user;
+  const { name, email, role} = user;
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -10,6 +10,7 @@ const sendCertificateEmail = async (user, filePath) => {
     template: "certificate",
     context: {
       name,
+      role: role == 'volunteer' ? 'Volunteering' : 'Participating' ,
       event: "MIRG-ICAIR 2024",
       theme:
         "Artificial Intelligence For Future Industrialization of Medicine in Sub-Saharan Africa",
