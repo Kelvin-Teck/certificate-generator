@@ -98,10 +98,11 @@ const generateCertificates = async (users) => {
       });
 
       console.log(`Certificate generated for ${name}: ${outputPath}`);
-      // const certificateUrl = await uploadCertificateToCloudinary(outputPath);
-      // console.log(`Uploaded to Cloudinary: ${certificateUrl}`);
+      const { url, public_id } = await uploadCertificateToCloudinary(outputPath);
+      const certificateUrl = url;
+      console.log(`Uploaded to Cloudinary: ${certificateUrl}`);
 
-      await sendCertificateEmail(user, outputPath)
+      await sendCertificateEmail(user, outputPath, certificateUrl)
     }
 
     return {
@@ -177,61 +178,61 @@ const generateCertificates = async (users) => {
 //   });
 // };
 
-const uploadCertificateToCloudinary = (filePath) => {
-  return new Promise((resolve, reject) => {
-    // Increase timeout to 60 seconds
-    const timeout = setTimeout(() => {
-      console.error(`Upload timeout for file: ${filePath}`);
-      reject(new Error("Cloudinary upload timed out"));
-    }, 60000); // 60 seconds timeout
+// const uploadCertificateToCloudinary = (filePath) => {
+//   return new Promise((resolve, reject) => {
+//     // Increase timeout to 60 seconds
+//     const timeout = setTimeout(() => {
+//       console.error(`Upload timeout for file: ${filePath}`);
+//       reject(new Error("Cloudinary upload timed out"));
+//     }, 60000); // 60 seconds timeout
 
-    // Verify file exists before uploading
-    if (!fs.existsSync(filePath)) {
-      clearTimeout(timeout);
-      return reject(new Error(`File not found: ${filePath}`));
-    }
+//     // Verify file exists before uploading
+//     if (!fs.existsSync(filePath)) {
+//       clearTimeout(timeout);
+//       return reject(new Error(`File not found: ${filePath}`));
+//     }
 
-    // Get file stats to check file size
-    const stats = fs.statSync(filePath);
-    if (stats.size === 0) {
-      clearTimeout(timeout);
-      return reject(new Error(`File is empty: ${filePath}`));
-    }
+//     // Get file stats to check file size
+//     const stats = fs.statSync(filePath);
+//     if (stats.size === 0) {
+//       clearTimeout(timeout);
+//       return reject(new Error(`File is empty: ${filePath}`));
+//     }
 
-    // Use upload method with comprehensive error handling
-    cloudinary.uploader.upload(
-      filePath,
-      {
-        folder: "certificates",
-        resource_type: "image",
-      },
-      (error, result) => {
-        // Clear the timeout immediately
-        clearTimeout(timeout);
+//     // Use upload method with comprehensive error handling
+//     cloudinary.uploader.upload(
+//       filePath,
+//       {
+//         folder: "certificates",
+//         resource_type: "image",
+//       },
+//       (error, result) => {
+//         // Clear the timeout immediately
+//         clearTimeout(timeout);
 
-        // Detailed error handling
-        if (error) {
-          console.error("Detailed Cloudinary upload error:", {
-            errorCode: error.code,
-            errorMessage: error.message,
-            filePath: filePath,
-          });
-          return reject(error);
-        }
+//         // Detailed error handling
+//         if (error) {
+//           console.error("Detailed Cloudinary upload error:", {
+//             errorCode: error.code,
+//             errorMessage: error.message,
+//             filePath: filePath,
+//           });
+//           return reject(error);
+//         }
 
-        // Verify result
-        if (!result || !result.secure_url) {
-          console.error("No secure URL returned from Cloudinary", { result });
-          return reject(new Error("No secure URL from Cloudinary"));
-        }
+//         // Verify result
+//         if (!result || !result.secure_url) {
+//           console.error("No secure URL returned from Cloudinary", { result });
+//           return reject(new Error("No secure URL from Cloudinary"));
+//         }
 
-        // Successfully uploaded
-        console.log(`Successfully uploaded certificate for: ${filePath}`);
-        resolve(result.secure_url);
-      }
-    );
-  });
-};
+//         // Successfully uploaded
+//         console.log(`Successfully uploaded certificate for: ${filePath}`);
+//         resolve(result.secure_url);
+//       }
+//     );
+//   });
+// };
 
 
 // Function to upload the certificate file to Filestack
@@ -249,10 +250,40 @@ const uploadCertificateToFilestack = (filePath) => {
   });
 };
 
+const uploadCertificateToCloudinary = async (imagePath) => {
+  console.log({imagePath})
+  try {
+    //Resolve the full path of the image in the local folder
+    // const imagePath = path.resolve(
+    //   __dirname,
+    //   "path_to_your_folder",
+    //   imageFileName
+    // );
+
+    // Upload the image to Cloudinary
+    const certificateImage = await cloudinary.uploader.upload(imagePath, {
+      folder: "certificates", // Specify the folder in Cloudinary
+      width: 300, // Resize width to 300
+      crop: "scale", // Apply scaling crop
+    });
+
+    // Return the Cloudinary response
+    const response = {
+      public_id: certificateImage.public_id,
+      url: certificateImage.secure_url,
+    };
+
+    return response;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   generateAndUploadCertificate,
   convertExcelToBase64,
   generateCertificates,
   uploadCertificateToCloudinary,
-  uploadCertificateToFilestack
+  uploadCertificateToFilestack,
 };

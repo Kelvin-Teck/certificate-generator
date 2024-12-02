@@ -23,6 +23,7 @@ const corsOptions = {
   origin: ["http://localhost:5173/", "http://127.0.0.1:5500/"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // Custom headers allowed
+  exposedHeaders: ["Content-Disposition"],
   credentials: true, // Allow credentials like cookies or authentication headers
   optionsSuccessStatus: 200, // Some legacy browsers choke on status 204 for OPTIONS
 };
@@ -30,7 +31,7 @@ const corsOptions = {
 app.use(express.json({ extended: true }));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: false }));
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use("/api/certificate", router);
 
@@ -38,7 +39,9 @@ app.get("/", (req, res) => res.send("Server is up and running!!!"));
 
 const startApp = async () => {
   await connectToDB();
-  app.listen(PORT, () => console.log(`server is running on http://localhost:${PORT}`));
+  app.listen(PORT, () =>
+    console.log(`server is running on http://localhost:${PORT}`)
+  );
 };
 
 startApp();

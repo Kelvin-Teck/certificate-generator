@@ -1,37 +1,29 @@
-<!DOCTYPE html>
 <html>
-<head>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-    }
-    .certificate-link {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      color: white;
-      background-color: #28a745;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .certificate-link:hover {
-      background-color: #218838;
-    }
-  </style>
-</head>
-<body>
-  <h1>Thank You for {{role}}, {{name}}!</h1>
-  <p>
-    We truly appreciate your participation in <strong>{{event}}</strong>, themed - <i>{{theme}}</i>. 
-    Your involvement was invaluable, and we are pleased to provide you with a certificate recognizing your participation.
-  </p>
-  <p>
-    Click the button below to download your participation certificate:
-  </p>
-  <a class="certificate-link" href="{{certificateUrl}}" download="{{name}}_participation_certificate.png">Download Certificate</a>
-  <p>Best regards,<br> The Event Team</p>
-</body>
+  <head>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; }
+      .certificate-link { display: inline-block; margin-top: 20px; padding: 10px
+      20px; color: white; background-color: #28a745; text-decoration: none;
+      border-radius: 5px; font-size: 16px; cursor: pointer; }
+      .certificate-link:hover { background-color: #218838; }
+    </style>
+  </head>
+  <body>
+    <h1>Thank You for {{role}}, {{name}}!</h1>
+    <p>
+      We truly appreciate your participation in
+      <strong>{{event}}</strong>, themed -
+      <i>{{theme}}</i>. Your involvement was invaluable, and we are pleased to
+      provide you with a certificate recognizing your participation.
+    </p>
+    <p>
+      Click the button below to download your participation certificate:
+    </p>
+    <a
+      class="certificate-link"
+      href="{{certificateUrl}}"
+      download="{{name}}_certificate.png"
+    >View Certificate</a>
+    <p>Best regards,<br /> The Event Team</p>
+  </body>
 </html>

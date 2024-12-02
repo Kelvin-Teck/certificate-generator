@@ -1,6 +1,6 @@
 const transporter = require("../config/transporter");
 
-const sendCertificateEmail = async (user, filePath) => {
+const sendCertificateEmail = async (user, filePath, certificateUrl) => {
   const { name, email, role} = user;
 
   const mailOptions = {
@@ -14,6 +14,7 @@ const sendCertificateEmail = async (user, filePath) => {
       event: "MIRG-ICAIR 2024",
       theme:
         "Artificial Intelligence For Future Industrialization of Medicine in Sub-Saharan Africa",
+      certificateUrl
     },
     attachments: [
       {
