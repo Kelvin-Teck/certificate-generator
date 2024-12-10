@@ -4,8 +4,7 @@ const { captureRawBinary } = require("./middleware");
 const router = express.Router();
 
 router.post(
-  "/generate-by-json",
-
+  "/generate",
   certificateController.uploadCertificate
 );
 

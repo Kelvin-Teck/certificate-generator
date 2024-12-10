@@ -1,8 +1,10 @@
-const { createCanvas, loadImage } = require("canvas");
+const { createCanvas, loadImage, registerFont } = require("canvas");
 const cloudinary = require("./config/cloudinary");
 const fs = require("fs");
 const path = require("path");
 const { sendCertificateEmail } = require("./mailers/mail");
+const User = require('./model');
+
 // const filestack = require("filestack-node");
 // const client = filestack.init("your-api-key"); // Replace with your Filestack API key
 
@@ -48,6 +50,31 @@ const convertExcelToBase64 = async () => {
 };
 
 const generateCertificates = async (users) => {
+  registerFont("./AlexBrush-Regular.ttf", {
+    family: "Alex Brush",
+  });
+
+  registerFont("./Montserrat-VariableFont_wght.ttf", {
+    family: "Montserrat",
+  });
+
+  registerFont("./MontserratAlternates-Regular.otf", {
+    family: "MontserratAlternatesRegular",
+  });
+
+  // Register Roboto font files
+  registerFont(path.join(__dirname, "Roboto-Regular.ttf"), {
+    family: "Roboto",
+  });
+  registerFont(path.join(__dirname,  "Roboto-Bold.ttf"), {
+    family: "Roboto",
+    weight: "bold",
+  });
+  registerFont(path.join(__dirname, "Roboto-Italic.ttf"), {
+    family: "Roboto",
+    style: "italic",
+  });
+
   const templatePath = path.join(__dirname, "certificate_template.png"); // Path to the certificate template
   const outputDir = path.join(__dirname, "generated_certificates");
 
@@ -69,18 +96,66 @@ const generateCertificates = async (users) => {
       // Draw the template onto the canvas
       context.drawImage(templateImage, 0, 0);
 
+
+
       // Customize text styles
-      context.font = "bold 150px Arial";
-      context.fillStyle = "black";
+      context.font = 'bold 150px "Alex Brush"';
+      context.fillStyle = "#8646E5";
       context.textAlign = "center";
 
       // Add user details to the certificate
-      context.fillText(name, canvas.width / 2, 2000); // Name (adjust Y position as needed)
-      context.font = "italic 100px Arial";
-      context.fillText(role, 2000, 2270); // Role
-      // context.fillText(email, canvas.width / 2, 500); // Email
-      context.strokeStyle = "red";
-      context.strokeRect(490, 330, 20, 20); // Small box around the intended text position
+      context.fillText(name, canvas.width / 2, 800); // Name (adjust Y position as needed)
+
+      if (role == "participant") {
+        const padding = 50; // Padding around text
+        const boxX = 1190;
+        const boxY = 415;
+        const boxWidth = context.measureText(role).width + padding * 2; // Include padding width
+        const boxHeight = 150 + padding * 2; // Height of the box including padding
+        context.font = 'bold 30px "Roboto"';
+        context.fillStyle = "#8646E5";
+        // context.textAlign = "";
+        // context.fillText(role.toUpperCase(), 1237, 538); // Role
+
+        context.fillText(
+          role.toUpperCase(),
+          boxX + padding,
+          boxY + boxHeight / 2
+        ); // Role
+      } else if (role == "volunteer") {
+        const padding = 50; // Padding around text
+        const boxX = 1175;
+        const boxY = 415;
+        const boxWidth = context.measureText(role).width + padding * 2; // Include padding width
+        const boxHeight = 150 + padding * 2; // Height of the box including padding
+        context.font = 'bold 30px "Roboto"';
+        context.fillStyle = "#8646E5";
+        // context.textAlign = "";
+        // context.fillText(role.toUpperCase(), 1237, 538); // Role
+
+        context.fillText(
+          role.toUpperCase(),
+          boxX + padding,
+          boxY + boxHeight / 2
+        ); // Role
+      } else if (role == "speaker") {
+        const padding = 50; // Padding around text
+        const boxX = 1160;
+        const boxY = 415;
+        const boxWidth = context.measureText(role).width + padding * 2; // Include padding width
+        const boxHeight = 150 + padding * 2; // Height of the box including padding
+        context.font = 'bold 30px "Roboto"';
+        context.fillStyle = "#8646E5";
+        // context.textAlign = "";
+        // context.fillText(role.toUpperCase(), 1237, 538); // Role
+
+        context.fillText(
+          role.toUpperCase(),
+          boxX + padding,
+          boxY + boxHeight / 2
+        ); // Role
+      }
+   
 
       // Save the generated certificate
       const outputPath = path.join(
@@ -98,11 +173,15 @@ const generateCertificates = async (users) => {
       });
 
       console.log(`Certificate generated for ${name}: ${outputPath}`);
-      const { url, public_id } = await uploadCertificateToCloudinary(outputPath);
+      const { url, public_id } = await uploadCertificateToCloudinary(
+        outputPath
+      );
       const certificateUrl = url;
       console.log(`Uploaded to Cloudinary: ${certificateUrl}`);
 
-      await sendCertificateEmail(user, outputPath, certificateUrl)
+      await insertUser({name, role, email, certificateUrl})
+
+      await sendCertificateEmail(user, outputPath, certificateUrl);
     }
 
     return {
@@ -115,130 +194,13 @@ const generateCertificates = async (users) => {
   }
 };
 
-// const uploadCertificateToCloudinary = (filePath) => {
-
-//   return new Promise((resolve, reject) => {
-//      const timeout = setTimeout(() => {
-//       reject(new Error("Cloudinary upload timed out"));
-//     }, 30000);
-//     cloudinary.uploader.upload(
-//       filePath,
-//       { folder: "certificates" },
-//       (error, result) => {
-//         clearTimeout(timeout);
-//         if (error) return reject(error);
-//         resolve(result.secure_url); // Return the public URL of the uploaded file
-//       }
-//     );
-//   });
-// };
-
-
-// const uploadCertificateToCloudinary = (filePath) => {
-//   return new Promise((resolve, reject) => {
-//     // Create a timeout
-//     const timeout = setTimeout(() => {
-//       reject(new Error("Cloudinary upload timed out"));
-//     }, 30000); // 30 seconds timeout
-
-//     // Use upload_stream for more reliable upload
-//     const uploadStream = cloudinary.uploader.upload_stream(
-//       {
-//         folder: "certificates",
-//         resource_type: "image",
-//       },
-//       (error, result) => {
-//         // Clear the timeout to prevent memory leaks
-//         clearTimeout(timeout);
-
-//         // Handle potential errors
-//         if (error) {
-//           console.error("Cloudinary upload error:", error);
-//           return reject(error);
-//         }
-
-//         // Resolve with the secure URL
-//         if (result && result.secure_url) {
-//           resolve(result.secure_url);
-//         } else {
-//           reject(new Error("No secure URL returned from Cloudinary"));
-//         }
-//       }
-//     );
-
-//     // Create a read stream and pipe it to the upload stream
-//     const fileStream = fs.createReadStream(filePath);
-//     fileStream.pipe(uploadStream);
-
-//     // Handle file stream errors
-//     fileStream.on("error", (err) => {
-//       clearTimeout(timeout);
-//       reject(err);
-//     });
-//   });
-// };
-
-// const uploadCertificateToCloudinary = (filePath) => {
-//   return new Promise((resolve, reject) => {
-//     // Increase timeout to 60 seconds
-//     const timeout = setTimeout(() => {
-//       console.error(`Upload timeout for file: ${filePath}`);
-//       reject(new Error("Cloudinary upload timed out"));
-//     }, 60000); // 60 seconds timeout
-
-//     // Verify file exists before uploading
-//     if (!fs.existsSync(filePath)) {
-//       clearTimeout(timeout);
-//       return reject(new Error(`File not found: ${filePath}`));
-//     }
-
-//     // Get file stats to check file size
-//     const stats = fs.statSync(filePath);
-//     if (stats.size === 0) {
-//       clearTimeout(timeout);
-//       return reject(new Error(`File is empty: ${filePath}`));
-//     }
-
-//     // Use upload method with comprehensive error handling
-//     cloudinary.uploader.upload(
-//       filePath,
-//       {
-//         folder: "certificates",
-//         resource_type: "image",
-//       },
-//       (error, result) => {
-//         // Clear the timeout immediately
-//         clearTimeout(timeout);
-
-//         // Detailed error handling
-//         if (error) {
-//           console.error("Detailed Cloudinary upload error:", {
-//             errorCode: error.code,
-//             errorMessage: error.message,
-//             filePath: filePath,
-//           });
-//           return reject(error);
-//         }
-
-//         // Verify result
-//         if (!result || !result.secure_url) {
-//           console.error("No secure URL returned from Cloudinary", { result });
-//           return reject(new Error("No secure URL from Cloudinary"));
-//         }
-
-//         // Successfully uploaded
-//         console.log(`Successfully uploaded certificate for: ${filePath}`);
-//         resolve(result.secure_url);
-//       }
-//     );
-//   });
-// };
 
 
 // Function to upload the certificate file to Filestack
 const uploadCertificateToFilestack = (filePath) => {
   return new Promise((resolve, reject) => {
-    client.upload(filePath)
+    client
+      .upload(filePath)
       .then((result) => {
         console.log("File uploaded successfully:", result);
         resolve(result.url); // Return the URL of the uploaded file
@@ -251,16 +213,9 @@ const uploadCertificateToFilestack = (filePath) => {
 };
 
 const uploadCertificateToCloudinary = async (imagePath) => {
-  console.log({imagePath})
+  
   try {
-    //Resolve the full path of the image in the local folder
-    // const imagePath = path.resolve(
-    //   __dirname,
-    //   "path_to_your_folder",
-    //   imageFileName
-    // );
 
-    // Upload the image to Cloudinary
     const certificateImage = await cloudinary.uploader.upload(imagePath, {
       folder: "certificates", // Specify the folder in Cloudinary
       width: 300, // Resize width to 300
@@ -278,7 +233,29 @@ const uploadCertificateToCloudinary = async (imagePath) => {
     console.error("Error uploading image:", error);
     throw error;
   }
-}
+};
+
+// const bulkInsertUsers = async (users) => {
+
+//   try {
+//     const result = await User.insertMany(users, { ordered: true });
+//     console.log("Bulk insert successful:", result);
+//   } catch (error) {
+//     console.error("Error during bulk insert:", error);
+//   }
+// };
+
+
+const insertUser = async (user) => {
+  
+  try {
+    const result = await User.create(user);
+    console.log("insert successful:", result);
+  } catch (error) {
+    console.error("Error during bulk insert:", error);
+  }
+};
+
 
 module.exports = {
   generateAndUploadCertificate,
@@ -286,4 +263,5 @@ module.exports = {
   generateCertificates,
   uploadCertificateToCloudinary,
   uploadCertificateToFilestack,
+  insertUser
 };
