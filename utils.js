@@ -50,7 +50,7 @@ const convertExcelToBase64 = async () => {
 };
 
 const generateCertificates = async (users) => {
-  registerFont(path.join(__dirname, "/static/AlexBrush-Regular.ttf"), {
+  registerFont(path.join(__dirname, "/AlexBrush-Regular.ttf"), {
     family: "Alex Brush",
   });
 
