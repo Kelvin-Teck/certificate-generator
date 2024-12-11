@@ -50,7 +50,7 @@ const convertExcelToBase64 = async () => {
 };
 
 const generateCertificates = async (users) => {
-  registerFont("./static/AlexBrush-Regular.ttf", {
+  registerFont(path.join(__dirname, "./static/AlexBrush-Regular.ttf"), {
     family: "Alex Brush",
   });
 
@@ -63,7 +63,7 @@ const generateCertificates = async (users) => {
   });
 
 
-  
+
   // Register Roboto font files
   registerFont(path.join(__dirname, "/static/Roboto-Regular.ttf"), {
     family: "Roboto",
