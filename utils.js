@@ -62,6 +62,8 @@ const generateCertificates = async (users) => {
     family: "MontserratAlternatesRegular",
   });
 
+
+  
   // Register Roboto font files
   registerFont(path.join(__dirname, "/static/Roboto-Regular.ttf"), {
     family: "Roboto",
