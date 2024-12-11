@@ -3,12 +3,11 @@ const cloudinary = require("./config/cloudinary");
 const fs = require("fs");
 const path = require("path");
 const { sendCertificateEmail } = require("./mailers/mail");
-const User = require('./model');
+const User = require("./model");
+const { certificateQueue } = require("./queue");
 
 // const filestack = require("filestack-node");
 // const client = filestack.init("your-api-key"); // Replace with your Filestack API key
-
-
 
 async function generateAndUploadCertificate(name, course) {
   const canvas = createCanvas(1200, 800);
@@ -50,27 +49,27 @@ const convertExcelToBase64 = async () => {
 };
 
 const generateCertificates = async (users) => {
-  registerFont("./AlexBrush-Regular.ttf", {
+  registerFont("./static/AlexBrush-Regular.ttf", {
     family: "Alex Brush",
   });
 
-  registerFont("./Montserrat-VariableFont_wght.ttf", {
+  registerFont("./static/Montserrat-VariableFont_wght.ttf", {
     family: "Montserrat",
   });
 
-  registerFont("./MontserratAlternates-Regular.otf", {
+  registerFont("./static/MontserratAlternates-Regular.otf", {
     family: "MontserratAlternatesRegular",
   });
 
   // Register Roboto font files
-  registerFont(path.join(__dirname, "Roboto-Regular.ttf"), {
+  registerFont(path.join(__dirname, "/static/Roboto-Regular.ttf"), {
     family: "Roboto",
   });
-  registerFont(path.join(__dirname,  "Roboto-Bold.ttf"), {
+  registerFont(path.join(__dirname, "/static/Roboto-Bold.ttf"), {
     family: "Roboto",
     weight: "bold",
   });
-  registerFont(path.join(__dirname, "Roboto-Italic.ttf"), {
+  registerFont(path.join(__dirname, "/static/Roboto-Italic.ttf"), {
     family: "Roboto",
     style: "italic",
   });
@@ -95,8 +94,6 @@ const generateCertificates = async (users) => {
 
       // Draw the template onto the canvas
       context.drawImage(templateImage, 0, 0);
-
-
 
       // Customize text styles
       context.font = 'bold 150px "Alex Brush"';
@@ -155,7 +152,6 @@ const generateCertificates = async (users) => {
           boxY + boxHeight / 2
         ); // Role
       }
-   
 
       // Save the generated certificate
       const outputPath = path.join(
@@ -179,9 +175,19 @@ const generateCertificates = async (users) => {
       const certificateUrl = url;
       console.log(`Uploaded to Cloudinary: ${certificateUrl}`);
 
-      await insertUser({name, role, email, certificateUrl})
+      await insertUser({ name, role, email, certificateUrl });
 
       await sendCertificateEmail(user, outputPath, certificateUrl);
+
+      // Remove the file from the file system
+
+      fs.unlink(outputPath, (err) => {
+        if (err) {
+          console.error(`Failed to delete file: ${outputPath}`, err);
+        } else {
+          console.log(`Deleted file: ${outputPath}`);
+        }
+      });
     }
 
     return {
@@ -193,8 +199,6 @@ const generateCertificates = async (users) => {
     throw new Error("Failed to generate certificates");
   }
 };
-
-
 
 // Function to upload the certificate file to Filestack
 const uploadCertificateToFilestack = (filePath) => {
@@ -213,9 +217,7 @@ const uploadCertificateToFilestack = (filePath) => {
 };
 
 const uploadCertificateToCloudinary = async (imagePath) => {
-  
   try {
-
     const certificateImage = await cloudinary.uploader.upload(imagePath, {
       folder: "certificates", // Specify the folder in Cloudinary
       width: 300, // Resize width to 300
@@ -245,9 +247,7 @@ const uploadCertificateToCloudinary = async (imagePath) => {
 //   }
 // };
 
-
 const insertUser = async (user) => {
-  
   try {
     const result = await User.create(user);
     console.log("insert successful:", result);
@@ -256,12 +256,10 @@ const insertUser = async (user) => {
   }
 };
 
-
 module.exports = {
   generateAndUploadCertificate,
   convertExcelToBase64,
   generateCertificates,
   uploadCertificateToCloudinary,
-  uploadCertificateToFilestack,
-  insertUser
+  insertUser,
 };
