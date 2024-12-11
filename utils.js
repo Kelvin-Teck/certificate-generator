@@ -5,6 +5,7 @@ const path = require("path");
 const { sendCertificateEmail } = require("./mailers/mail");
 const User = require("./model");
 const { certificateQueue } = require("./queue");
+const { newError } = require("./response");
 
 // const filestack = require("filestack-node");
 // const client = filestack.init("your-api-key"); // Replace with your Filestack API key
@@ -103,7 +104,7 @@ const generateCertificates = async (users) => {
       // Add user details to the certificate
       context.fillText(name, canvas.width / 2, 800); // Name (adjust Y position as needed)
 
-      if (role == "participant") {
+      if (role.toLowerCase() == "participant") {
         const padding = 50; // Padding around text
         const boxX = 1190;
         const boxY = 415;
@@ -119,7 +120,7 @@ const generateCertificates = async (users) => {
           boxX + padding,
           boxY + boxHeight / 2
         ); // Role
-      } else if (role == "volunteer") {
+      } else if (role.toLowerCase() == "volunteer") {
         const padding = 50; // Padding around text
         const boxX = 1175;
         const boxY = 415;
@@ -135,7 +136,7 @@ const generateCertificates = async (users) => {
           boxX + padding,
           boxY + boxHeight / 2
         ); // Role
-      } else if (role == "speaker") {
+      } else if (role.toLowerCase() == "speaker") {
         const padding = 50; // Padding around text
         const boxX = 1160;
         const boxY = 415;
@@ -175,7 +176,12 @@ const generateCertificates = async (users) => {
       const certificateUrl = url;
       console.log(`Uploaded to Cloudinary: ${certificateUrl}`);
 
-      await insertUser({ name, role, email, certificateUrl });
+      await insertUser({
+        name,
+        role: role.toLowerCase(),
+        email,
+        certificateUrl,
+      });
 
       await sendCertificateEmail(user, outputPath, certificateUrl);
 
