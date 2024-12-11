@@ -54,6 +54,7 @@ const generateCertificates = async (users) => {
     family: "Alex Brush",
   });
 
+
   registerFont("./static/Montserrat-VariableFont_wght.ttf", {
     family: "Montserrat",
   });
@@ -61,8 +62,6 @@ const generateCertificates = async (users) => {
   registerFont("./static/MontserratAlternates-Regular.otf", {
     family: "MontserratAlternatesRegular",
   });
-
-
 
   // Register Roboto font files
   registerFont(path.join(__dirname, "/static/Roboto-Regular.ttf"), {
